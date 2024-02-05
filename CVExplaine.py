@@ -71,6 +71,8 @@ def run():
                                 f"Authentication: {authentication}\n"
                                 f"Complexity: {complexity}\n"
                                 f"Vector = {attack_vector}\n")
+            else:
+                information += f"No CVSS found\n"
             information += "\n"
             result.append(information)
             print(information)
