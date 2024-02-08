@@ -18,18 +18,21 @@ def parse_args():
     global args
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('-f', '--file', type=str, help='Insert filepath to .txt file with CVE names here (Required)',
-                        required=True)  # обязательный параметр
+    parser.add_argument('CVE', type=str, nargs='*', default=[],
+                        help='CVE in console (optional)')
+    parser.add_argument('-f', '--file', type=str, help='If you want to insert CVE from .txt file, type filepath here')
     parser.add_argument('-o', '--output', type=str,
-                        help='If you want to save the output to .txt file, insert filepath here')
-    parser.add_argument('-t', '--translate', action='store_true', help='Enables translate')
+                        help='If you want to save the output to .txt file, type filepath here')
+    parser.add_argument('-t', '--translate', action='store_true',
+                        help='Translates CVE description from English to Russian')
     args = parser.parse_args()
 
 
-def start(input_path):
-    with open(input_path, 'r') as input_file:
-        cve_names = list(i.strip() for i in input_file.readlines())
-        return cve_names
+
+def cve_in_txt(input_path):
+    if input_path:
+        with open(input_path, 'r') as input_file:
+            args.CVE += list(i.strip() for i in input_file.readlines())
 
 
 def translate(text):
@@ -39,22 +42,26 @@ def translate(text):
 
 
 def saving_output(output_path, output):
-    with open(output_path, 'w') as output_file:
-        output_file.writelines(output)
+    if output_path:
+        with open(output_path, 'w') as output_file:
+            output_file.writelines(output)
+        print(f"Output saved to {args.output}")
 
 
 def run():
+    global result
+
     result = []
-    cve_names = start(args.file)
-    for cve_name in cve_names:
-        response = requests.get("https://cve.circl.lu/api/cve/" + cve_name)
+    for cve_name in args.CVE:
+        api_link = 'https://cve.circl.lu/api/cve/'
+        response = requests.get(api_link + cve_name)
         if response.status_code == 200:
             data = json.loads(response.text)
             description = data["summary"]
             date = data["Published"][:10]
             information = (f"Name: {cve_name}\n"
                            f"Date: {date}\n"
-                           f"Link: {'https://cve.circl.lu/api/cve/' + cve_name}\n"
+                           f"Link: {api_link + cve_name}\n"
                            f"Description: {description}\n")
             if args.translate:
                 translation = translate(description)
@@ -79,16 +86,14 @@ def run():
         else:
             print(f"ERROR while receiving file. Status code: {response.status_code}, {cve_name}")
 
-    if args.output is not None:
-        saving_output(args.output, result)
-        print(f"Output saved to {args.output}")
-
     print("DONE!")
 
 
 def main():
     parse_args()
+    cve_in_txt(args.file)
     run()
+    saving_output(args.output, result)
 
 
 if __name__ == "__main__":
