@@ -74,7 +74,7 @@ def run():
                 complexity = data["access"]["complexity"]
                 attack_vector = data["access"]["vector"]
                 information += (f"CVSS 2.0 Base Score: {cvss_score}\n"
-                                f"VSS Vector: {cvss_vector}\n"
+                                f"CVSS Vector: {cvss_vector}\n"
                                 f"Authentication: {authentication}\n"
                                 f"Complexity: {complexity}\n"
                                 f"Vector = {attack_vector}\n")
