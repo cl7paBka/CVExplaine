@@ -57,36 +57,40 @@ def run():
         response = requests.get(api_link + cve_name)
         if response.status_code == 200:
             data = json.loads(response.text)
-            description = data["summary"]
-            date = data["Published"][:10]
+            description = data['summary']
+            date = data['Published'][:10]
+
             information = (f"Name: {cve_name}\n"
                            f"Date: {date}\n"
-                           f"Link: {api_link + cve_name}\n"
+                           f"Link: {'https://nvd.nist.gov/vuln/detail/' + cve_name}\n"
                            f"Description: {description}\n")
             if args.translate:
                 translation = translate(description)
                 information += f"Translated: {translation}\n"
 
-            if data["cvss"] is not None:
-                cvss_score = data["cvss"]
-                cvss_vector = data["cvss-vector"]
-                authentication = data["access"]["authentication"]
-                complexity = data["access"]["complexity"]
-                attack_vector = data["access"]["vector"]
-                information += (f"CVSS 2.0 Base Score: {cvss_score}\n"
-                                f"CVSS Vector: {cvss_vector}\n"
-                                f"Authentication: {authentication}\n"
-                                f"Complexity: {complexity}\n"
-                                f"Vector = {attack_vector}\n")
+            if data['cvss'] is not None:
+                access = data['access']
+                impact = data['impact']
+
+                information += (f"CVSS 2.0 Base Score: {data['cvss']}\n"
+                                f"CVSS Vector: {data['cvss-vector']}\n"
+                                
+                                f"Authentication: {access['authentication']}\n"
+                                f"Complexity: {access['complexity']}\n"
+                                f"Vector: {access['vector']}\n"
+                                
+                                f"Availability: {impact['availability']}\n"
+                                f"Confidentiality: {impact['confidentiality']}\n"
+                                f"Integrity: {impact['integrity']}\n")
             else:
                 information += f"No CVSS found\n"
-            information += "\n"
-            result.append(information)
+            result.append(information + "\n")
             print(information)
-        else:
-            print(f"ERROR while receiving file. Status code: {response.status_code}, {cve_name}")
 
-    print("DONE!")
+        else:
+            print(f"ERROR while receiving file. Status code: {response.status_code}\n"
+                  f"CVE: {cve_name}\n")
+    print(f"Done! {len(args.CVE)} CVE processed.")
 
 
 def main():
