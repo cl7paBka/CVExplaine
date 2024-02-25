@@ -40,9 +40,15 @@ def saving_output(output_path, output):
 
 def extract_vulnerability_data(html_content):
     soup = BeautifulSoup(html_content, 'html.parser')
+
     description = soup.find('p', {'data-testid': 'vuln-description'}).text.strip()
     date = soup.find('span', {'data-testid': 'vuln-published-on'}).text.strip()
-    cvss_v3_html = soup.find('input', {'id': 'nistV3MetricHidden'})['value']
+
+    if soup.find('input', {'id': 'nistV3MetricHidden'}) is not None:
+        cvss_v3_html = soup.find('input', {'id': 'nistV3MetricHidden'})['value']
+    elif soup.find('input', {'id': 'cnaV3MetricHidden'}) is not None:
+        cvss_v3_html = soup.find('input', {'id': 'cnaV3MetricHidden'})['value']
+
     soup_cvss_v3 = BeautifulSoup(cvss_v3_html, 'html.parser')
     cvss_data = extract_cvss_data(soup_cvss_v3)
     return {
@@ -54,8 +60,8 @@ def extract_vulnerability_data(html_content):
 
 def extract_cvss_data(cvss_v3):
     cvss_data = {}
-    cvss_data[
-        'base_score'] = f"{cvss_v3.find('span', {'data-testid': 'vuln-cvssv3-base-score'}).text.strip()} {cvss_v3.find('span', {'data-testid': 'vuln-cvssv3-base-score-severity'}).text.strip()}"
+    cvss_data['base_score'] = (f"{cvss_v3.find('span', {'data-testid': 'vuln-cvssv3-base-score'}).text.strip()} "
+                               f"{cvss_v3.find('span', {'data-testid': 'vuln-cvssv3-base-score-severity'}).text.strip()}")
     cvss_data['vector'] = cvss_v3.find('span', {'data-testid': 'vuln-cvssv3-vector'}).text.strip()
     cvss_data['attack_vector'] = cvss_v3.find('span', {'data-testid': 'vuln-cvssv3-av'}).text.strip()
     cvss_data['attack_complexity'] = cvss_v3.find('span', {'data-testid': 'vuln-cvssv3-ac'}).text.strip()
