@@ -46,7 +46,7 @@ def extract_vulnerability_data(html_content):
 
     if soup.find('input', {'id': 'nistV3MetricHidden'}) is not None:
         cvss_v3_html = soup.find('input', {'id': 'nistV3MetricHidden'})['value']
-    elif soup.find('input', {'id': 'cnaV3MetricHidden'}) is not None:
+    else:
         cvss_v3_html = soup.find('input', {'id': 'cnaV3MetricHidden'})['value']
 
     soup_cvss_v3 = BeautifulSoup(cvss_v3_html, 'html.parser')
